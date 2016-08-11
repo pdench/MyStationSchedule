@@ -10,17 +10,17 @@
         <div class="topBuffer"></div>
         <label for="Route">Select your route</label> 
         @Html.DropDownList("Route", ViewData["routes"] as List<SelectListItem>)
-        <div id="stopFrom" class="hidden">
+        <div id="stopFrom" class="hide">
             <hr />
             <label for="Stop1">Select Your Stop</label>
             @Html.DropDownList("Stop1", new SelectList(string.Empty, "Value", "Text"), "Please select Your Stop", new { style = "width:250px", @class = "dropdown1" })
         </div>
-        <div id="stopTo" class="hidden">
+        <div id="stopTo" class="hide">
             <hr />
             <label for="Stop2">Select Your Destination</label>
             @Html.DropDownList("Stop2", new SelectList(string.Empty, "Value", "Text"), "Please select Your Destination", new { style = "width:250px", @class = "dropdown1" })
         </div>
-        <div id="submit" class="hidden">
+        <div id="submit" class="hide">
             <button class="btn-primary" type="submit">Get Schedule</button>
         </div>
     </div>
@@ -35,7 +35,7 @@
         // dropdown list selection changed
         $("#Route").change(function () {
             // fill the outbound dropdown
-            $("#stopFrom").toggleClass("show hidden");
+            $("#stopFrom").show();
             $("#stopTo").toggleClass("show hidden");
             $("#submit").toggleClass("show hidden");
             var dropDown = '#Stop1';
