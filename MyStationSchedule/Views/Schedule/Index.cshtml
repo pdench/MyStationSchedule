@@ -1,0 +1,72 @@
+﻿@model IEnumerable<MyStationSchedule.Models.Routes>
+
+@{
+    ViewBag.Title = "My Station Schedule";
+}
+
+@using (Html.BeginForm())
+{
+    <div id="main" class="container">
+        <div class="topBuffer"></div>
+        <label for="Route">Select your route</label> 
+        @Html.DropDownList("Route", ViewData["routes"] as List<SelectListItem>)
+        <div id="stopFrom" class="hidden">
+            <hr />
+            <label for="Stop1">Select Your Stop</label>
+            @Html.DropDownList("Stop1", new SelectList(string.Empty, "Value", "Text"), "Please select Your Stop", new { style = "width:250px", @class = "dropdown1" })
+        </div>
+        <div id="stopTo" class="hidden">
+            <hr />
+            <label for="Stop2">Select Your Destination</label>
+            @Html.DropDownList("Stop2", new SelectList(string.Empty, "Value", "Text"), "Please select Your Destination", new { style = "width:250px", @class = "dropdown1" })
+        </div>
+        <div id="submit" class="hidden">
+            <button class="btn-primary" type="submit">Get Schedule</button>
+        </div>
+    </div>
+
+}
+
+<script src="~/Scripts/jquery-1.10.2.js" type="text/javascript"></script>
+<script src="~/Scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // dropdown list selection changed
+        $("#Route").change(function () {
+            // fill the outbound dropdown
+            $("#stopFrom").toggleClass("show hidden");
+            $("#stopTo").toggleClass("show hidden");
+            $("#submit").toggleClass("show hidden");
+            var dropDown = '#Stop1';
+            var direction = '0';
+            FillStops(dropDown, direction);
+            // fill the inbound dropdown
+            dropDown = '#Stop2';
+            direction = '1';
+            FillStops(dropDown, direction);
+
+        })
+    });
+
+    function FillStops(dropDown, direction) {
+        $(dropDown).empty();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("GetStops")',
+            dataType: 'json',
+            data: { id: $("#Route").val(), inOrOut: direction },
+            success: function (stops) {
+                $.each(stops, function (i, stop) {
+                    $(dropDown).append('<option value="' + stop.Value + '">' + stop.Text + '</option');
+                });
+            },
+            error: function (ex) {
+                alert('Failed to retrieve stops. ' + ex);
+            }
+        });
+        return false;
+
+    }
+</script>
