@@ -7,6 +7,9 @@ using System.Configuration;
 using Newtonsoft.Json;
 using System.Net;
 using MyStationSchedule.Models;
+using System.Data.SqlClient;
+using System.Data;
+using System.Data.Entity.Infrastructure;
 
 namespace MyStationSchedule.Controllers
 {
@@ -23,7 +26,6 @@ namespace MyStationSchedule.Controllers
             WebClient client = new WebClient();
             string output = client.DownloadString(url);
 
-            DateTime trainTime = FromUnixTime(1470922500);
             Route routes = JsonConvert.DeserializeObject<Route>(output);
             List<SelectListItem> routeListDD = new List<SelectListItem>();
             foreach (var item in routes.mode)
@@ -59,17 +61,56 @@ namespace MyStationSchedule.Controllers
                     foreach (var thisStop in item.stop)
                     {
                         System.Diagnostics.Debug.WriteLine(thisStop.parent_station_name);
-                        stopsList.Add(new SelectListItem { Text = thisStop.parent_station_name, Value = thisStop.stop_id });
+                        stopsList.Add(new SelectListItem { Text = thisStop.stop_name, Value = thisStop.stop_id });
                     }
                 }
             }
             return Json(new SelectList(stopsList, "Text", "Value"));
         }
 
-        public DateTime FromUnixTime(long unixTime)
+        public JsonResult GetSchedules(string id)
         {
-            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return epoch.AddSeconds(unixTime);
+            string sql = "usp_GetStopData @Stop";
+            List<Schedule> scheduledStops = new List<Schedule>();
+
+            try
+            {
+                using (var context = new MyStationScheduleEntities())
+                {
+                    SqlParameter stop = new SqlParameter("@Stop", id);
+                    var stops = context.Database.SqlQuery<usp_GetStopData_Result>(sql, stop).ToList();
+
+                    foreach (usp_GetStopData_Result item in stops)
+                    {
+                        Schedule thisStop = new Schedule();
+                        thisStop.ArrivalTime = GetTime(item.arrival_time);
+                        thisStop.Direction = item.direction;
+                        thisStop.Timing = item.Timing;
+                        thisStop.TrainNumber = item.train_number;
+                        //thisStop.Origination = item.origination_stop;
+                        //thisStop.OriginationTime = item.origination_time;
+                        scheduledStops.Add(thisStop);
+                    }
+                }
+                return Json(scheduledStops, "Text");
+            }
+            catch (DataException ex)
+            {
+                return Json("");
+            }
         }
+
+        private string GetTime (string inputTime)
+        {
+            try
+            {
+                return DateTime.Parse(inputTime).ToString(@"hh\:mm\:ss tt");
+            }
+            catch (Exception ex)
+            {
+                return inputTime;
+            }
+        }
+
     }
 }

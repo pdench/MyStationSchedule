@@ -49,4 +49,17 @@ namespace MyStationSchedule.Models
     {
         public List<Direction> direction { get; set; }
     }
+
+    public class Schedule
+    {
+        public string ArrivalTime { get; set; }
+        public string DepartureTime { get; set; }
+        public string StopName { get; set; }
+        public string Destination { get; set; }
+        public string Direction { get; set; }
+        public string Timing { get; set; }
+        public string TrainNumber { get; set; }
+        public string Origination { get; set; }
+        public string OriginationTime { get; set; }
+    }
 }
